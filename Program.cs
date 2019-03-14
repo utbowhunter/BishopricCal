@@ -21,13 +21,18 @@ namespace Bishopric6Cal
         static string[] Scopes = { CalendarService.Scope.CalendarReadonly };
         static string ApplicationName = "Bishopric 6th Ward Calendar";
 
-        // ***** Get the skipped calendars
-        static List<string> skippedCalendars = GetSkippedCalendars();
-
+        
         static void Main(string[] args)
         {
+            // ***** Get the skipped calendars
+            Calendars.GetSkippedCalendars();
+
+            // ***** Get the calendars
+            Calendars.GetCalendars();
+
+
             UserCredential credential;
-            
+
             using (var stream =
                 new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
             {
@@ -58,9 +63,9 @@ namespace Bishopric6Cal
             // Loop through the calendars
             foreach (var c in list)
             {
-               
 
-                bool isCalSkipped = IsCalSkipped(c.Id);
+
+                bool isCalSkipped = Calendars.IsCalSkipped(c.Id);
 
                 if (!isCalSkipped)
                 {
@@ -116,38 +121,41 @@ namespace Bishopric6Cal
                     }
                 }
             }
+
+
             
+
+            RunSchedule();
 
             Console.Read();
 
         }
 
-        private static bool IsCalSkipped(string id)
-        {
-            bool skippedCal = skippedCalendars.Contains(id);
-
-            return skippedCal;
-        }
-
+ 
         private static bool IsCalSkipped()
         {
             throw new NotImplementedException();
         }
 
-        private static List<string> GetSkippedCalendars()
+ 
+        private static void RunSchedule()
         {
-            List<string> calenders = new List<string>();
+            // Get the list bishopric recurring appointments
+            List<Appointment> _recurringBishopricAppt = AppointmentList.List.FindAll(x => x.Recurring = true && x.CalendarName.Contains("Bishopric") && x.StartTime <= DateTime.Now.AddDays(7));
 
-            string[] skippedCals = ConfigurationManager.AppSettings["SkippedCalendars"].Split(',');
-
-            foreach (string skippedCal in skippedCals)
+          
+            foreach (string calendar in Calendars.CalendarList)
             {
-                calenders.Add(skippedCal);
-            }
 
+                if (!calendar.Contains("Bishopric"))
+                {
+                    List<Appointment> calAppts = AppointmentList.List.FindAll(x => x.CalendarName == calendar && x.StartTime <= DateTime.Now.AddDays(7));
 
-            return calenders;
+                    string _emailMessage = Email.BuildEmail(_recurringBishopricAppt, calAppts);
 
+                    //Email.SendEmail(_emailMessage);
+                }
+            }            
         }
     }
 

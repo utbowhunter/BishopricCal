@@ -66,6 +66,8 @@
   <ItemGroup>
     <Compile Include="Appointment.cs" />
     <Compile Include="AppointmentList.cs" />
+    <Compile Include="Calendars.cs" />
+    <Compile Include="Email.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
